@@ -1,0 +1,62 @@
+function x(tt,tx,cc)
+    game.StarterGui:SetCore("SendNotification", {
+        Title = tt;
+        Text = tx;
+        Duration = cc;
+        Icon = "rbxthumb://type=Asset&id=7262533709&w=150&h=150";
+    })
+end
+
+
+function GetClosestPlayer()
+        local closestPlayer
+        local shortestDistance = 138
+
+        for i, v in pairs(game.Players:GetPlayers()) do
+            if v ~= game.Players.LocalPlayer and v.Character and v.Character:FindFirstChild("Humanoid") and v.Character.Humanoid.Health ~= 0 and v.Character:FindFirstChild("Head") then
+                local pos =  workspace.CurrentCamera:WorldToViewportPoint(v.Character.PrimaryPart.Position)
+                local magnitude = (Vector2.new(pos.X, pos.Y) - Vector2.new(game.Players.LocalPlayer:GetMouse().X, game.Players.LocalPlayer:GetMouse().Y)).magnitude
+                if magnitude < shortestDistance then
+                    closestPlayer = v
+                    shortestDistance = magnitude
+                end
+            end
+        end
+        return closestPlayer
+    end
+
+
+
+    game:GetService("UserInputService").InputBegan:Connect(function(keygo)
+           if (keygo.KeyCode == _G.Key) then
+               Toggled = not Toggled
+               if Toggled then
+               Plr =  GetClosestPlayer()
+end
+         end
+           
+end)
+game:GetService("RunService").RenderStepped:Connect(function()
+if _G.Smoothing and _G.Enabled and Toggled == true then
+    local Main = CFrame.new(workspace.CurrentCamera.CFrame.p, Plr.Character[_G.AimPart].Position + Plr.Character[_G.AimPart].Velocity*_G.Predicting/10)
+                                 workspace.CurrentCamera.CFrame = workspace.CurrentCamera.CFrame:Lerp(Main, _G.Smoothness, Enum.EasingStyle.Elastic, Enum.EasingDirection.InOut)
+                            elseif _G.Smoothing == false and _G.Enabled and Toggled == true then
+    workspace.CurrentCamera.CFrame = CFrame.new(workspace.CurrentCamera.CFrame.Position, Plr.Character[_G.AimPart].Position + Plr.Character[_G.AimPart].Velocity*_G.Predicting/10)
+                            end
+
+end)
+
+if _G.AirshotFunc == true then
+    
+                if Plr.Character.Humanoid.Jump == true and Plr.Character.Humanoid.FloorMaterial == Enum.Material.Air then
+                    _G.AimPart = _G.AirshotPart
+                else
+                    Plr.Character:WaitForChild("Humanoid").StateChanged:Connect(function(old,new)
+                        if new == Enum.HumanoidStateType.Freefall then
+                        _G.AimPart = _G.AirshotPart
+                        else
+                            _G.AimPart = _G.AimPart
+                        end
+                    end)
+                end
+            end
